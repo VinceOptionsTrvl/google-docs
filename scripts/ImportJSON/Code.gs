@@ -8,16 +8,12 @@
                 http://www.opensource.org/licenses/gpl-3.0.html
   ------------------------------------------------------------------------------------------------------------------------------------
   A library for importing JSON feeds into Google spreadsheets. Functions include:
-
      ImportJSON            For use by end users to import a JSON feed from a URL 
      ImportJSONViaPost     For use by end users to import a JSON feed from a URL using POST parameters
      ImportJSONAdvanced    For use by script developers to easily extend the functionality of this library
-
   Future enhancements may include:
-
    - Support for a real XPath like syntax similar to ImportXML for the query parameter
    - Support for OAuth authenticated APIs (see AddOAuthService__ function for failed experiment)
-
   Or feel free to write these and add on to the library yourself!
   ------------------------------------------------------------------------------------------------------------------------------------
   Changelog:
@@ -524,4 +520,36 @@ function convertToBool_(map, key) {
   if (map[key] != null) {
     map[key] = toBool_(map[key]);
   }  
+}
+
+function ImportJSONArrayValue(url, query, parseOptions, row, col)
+{
+   var result = ImportJSON(url, query, parseOptions);
+  
+   return [ result[row][col] ];
+}
+
+function test()
+{
+  Logger.log(ImportPricePoloniex("https://poloniex.com/public?command=returnTradeHistory&currencyPair=USDT_XMR","/","noHeaders"));
+}
+function ImportPricePoloniex(url, query, parseOptions)
+{
+   var result = ImportJSON(url, query, parseOptions);
+   var sell, buy;
+   for(var i = 0; i<result.length; i++) {
+     Logger.log(result[i][3]);
+     if(result[i][3] == 'sell' && !sell) {
+       sell = result[i][4];
+     }
+     else if(!buy) {
+       buy = result[i][4];
+     }
+     if(buy && sell)
+       break;
+   }
+   Logger.log("Sell " + sell + " buy " + buy);
+   if(sell && buy)
+     return (parseFloat(sell) + parseFloat(buy)) / 2;
+  return (!sell ? parseFloat(buy) : parseFloat(sell));
 }
